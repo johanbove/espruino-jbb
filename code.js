@@ -5,9 +5,8 @@ require("Storage").write("+jbb",{
 
 require("Storage").write("-jbb",`
 let chargingBlinker;
-let level;
 
-function draw() {
+function draw(level) {
   // Clear the screen
   g.clear();
   g.setFontAlign(0,0); // center font
@@ -18,13 +17,16 @@ function draw() {
 
 function getBatteryLevel() {
   level = E.getBattery();
-  console.log(level);
+  console.log('getBatteryLevel', level);
 
-  draw();  
+  draw(level);
+
+  checkChargingfunction(Bangle.isCharging(), level);
 
   // again, 10 secs later
   setTimeout(getBatteryLevel, 10000);
 }
+
 function blinkGreen() {
   let on = false;
   return setInterval(function() {
@@ -32,20 +34,24 @@ function blinkGreen() {
     LED2.write(on);
   }, 500);
 }
+
 function checkChargingfunction(charging, level) {
-  console.log(charging);
-  if (!charging || chargingBlinker) {
+  console.log('checkChargingfunction', charging, level, chargingBlinker);
+  if (chargingBlinker) {
     clearInterval(chargingBlinker);
   }
   if (charging) {
     chargingBlinker = blinkGreen();
-    if (level >= 99) {
-      clearInterval(chargingBlinker);
-      LED2.write(1);
-    }
   }
 }
-checkChargingfunction(Bangle.isCharging(), level);
-Bangle.on('charging', function(charging) { checkChargingfunction(charging, level); });
-getBatteryLevel();
+
+function main() {
+  getBatteryLevel();
+}
+
+Bangle.on('charging', function(isCharging) {
+  checkChargingfunction(isCharging, E.getBattery());
+});
+
+main();
 `);
