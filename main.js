@@ -1,11 +1,13 @@
-require("Storage").write("+jbm8b",{
-  "name":"Magic 8-Ball",
-  "src":"-jbm8b"
+var appname = "jbm8b";
+require("Storage").write("+"+appname,{
+  "name":"Magic 8 Ball",
+  "description":"A simple fortune telling app",
+  "src":"-"+appname,
+  //"icon":"*"+appname,
+  "version":"0.0.1",
+  "type":""
 });
-
-// @see https://en.wikipedia.org/wiki/Magic_8-Ball
-
-require("Storage").write("-jbm8b",`
+require("Storage").write("-"+appname,`
 const affirmative = [
   'It is\ncertain.',
   'It is\ndicededly\nso.',
@@ -59,12 +61,12 @@ function ask() {
   draw('Ask me a\nYes or No\nquestion\nand\ntouch the\nscreen');
 }
 
+ask();
+
 Bangle.on('touch', (button) => reply(button));
 
 setWatch(ask, BTN1, {repeat:true, edge:"falling"});
 
 // Back to launcher
 setWatch(Bangle.showLauncher, BTN2, {repeat:false, edge:"falling"});
-
-ask();
 `);
