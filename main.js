@@ -1,59 +1,72 @@
-require("Storage").write("+jbb",{
-  "name":"Battery Level",
-  "src":"-jbb"
+require("Storage").write("+jbm8b",{
+  "name":"Magic 8-Ball",
+  "src":"-jbm8b"
 });
 
-require("Storage").write("-jbb",`
-let chargingBlinker;
+// @see https://en.wikipedia.org/wiki/Magic_8-Ball
 
-function draw(level) {
-  console.log('draw', level);
-  // Clear the screen
+require("Storage").write("-jbm8b",`
+const affirmative = [
+  'It is certain.',
+  'It is\ndicededly\nso.',
+  'Without a doubt.',
+  'Yes definitely.',
+  'You may rely\non it.',
+  'As I see,\nit yes',
+  'Most likely.',
+  'Outlook good.',
+  'Yes.',
+  'Signs point\nto yes.'
+];
+const nonCommittal = [
+  'Reply hazy,\ntry again.',
+  'Ask again\nlater.',
+  'Better not\ntell you now.',
+  'Cannot\npredict now.',
+  'Concentrate\nand ask again.'
+];
+const negative = [
+  'Don\'t\ncount on it.',
+  'My reply is no.',
+  'My sources\nsay no.',
+  'Outlook is\nnot so good.',
+  'Very doubtful'
+];
+
+const answers = [affirmative, nonCommittal, negative];
+
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function predict(button) {
+  const a = Math.floor(getRandomArbitrary(0, 3));
+  const b = (a === 0) ? Math.floor(getRandomArbitrary(0, 10)) : Math.floor(getRandomArbitrary(0, 5));
+  const response = answers[a][b];
+  // console.log('Response:', response, button);
+  return response;
+}
+
+function draw(msg) {
   g.clear();
-  g.setFontAlign(0,0); // center font
-  g.setFont("6x8",8); // bitmap font, 8x magnified
-  // draw the current counter value
-  g.drawString(level.toString() + '%', g.getWidth()/2, g.getHeight()/2);
+  E.showMessage(msg, 'Magic 8 Ball');
 }
 
-function getBatteryLevel() {
-  level = E.getBattery();
-  console.log('getBatteryLevel', level);
-
-  draw(level);
-
-  // again, 10 secs later
-  setTimeout(getBatteryLevel, 10E3);
+function reply(button) {
+  draw(predict(button));
 }
 
-function blinkGreen() {
-  let on = false;
-  return setInterval(function() {
-    on = !on;
-    LED2.write(on);
-  }, 500);
+function ask() {
+  // console.log('Ask me a Yes or No question...');
+  draw('Ask me a\nYes or No\nquestion\nand\ntouch the\nscreen');
 }
 
-function checkChargingfunction(charging) {
-  console.log('checkChargingfunction', charging);
-  LED2.write(charging);
-}
+Bangle.on('touch', (button) => reply(button));
 
-function main() {
-  console.log('starting jbb version 0.0.1');
-  getBatteryLevel();
-}
+setWatch(ask, BTN1, {repeat:true, edge:"falling"});
 
-Bangle.on('charging', function(isCharging) {
-  getBatteryLevel();
-});
+// Back to launcher
+setWatch(Bangle.showLauncher, BTN2, {repeat:false, edge:"falling"});
 
-g.clear();
-Bangle.loadWidgets();
-Bangle.drawWidgets();
-
-main();
-
-// Show launcher when middle button pressed
-setWatch(Bangle.showLauncher, BTN2, {repeat:false,edge:"falling"});
+ask();
 `);
